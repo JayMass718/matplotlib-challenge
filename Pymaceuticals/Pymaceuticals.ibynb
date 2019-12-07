@@ -1,0 +1,89 @@
+# Dependencies and Setup
+%matplotlib inline
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+# Hide warning messages in notebook
+import warnings
+warnings.filterwarnings('ignore')
+
+# File to Load (Remember to Change These)
+mouse_drug_data_to_load = "data/mouse_drug_data.csv"
+clinical_trial_data_to_load = "data/clinicaltrial_data.csv"
+
+# Read the Mouse and Drug Data and the Clinical Trial Data
+mouse_drug_data_df = pd.read_csv(mouse_drug_data_to_load)
+clinical_trial_data_df = pd.read_csv(clinical_trial_data_to_load)
+
+# Combine the data into a single dataset
+combined_trial_data_df = pd.merge(mouse_drug_data_df, clinical_trial_data_df, how='outer', on='Mouse ID')
+
+# Display the data table for preview
+combined_trial_data_df.head()
+
+# Store the Mean Tumor Volume Data Grouped by Drug and Timepoint 
+tumor_volume_df = combined_trial_data_df.groupby(['Drug', 'Timepoint'])['Tumor Volume (mm3)'].mean()
+
+# Convert to DataFrame
+tumor_analysis = pd.DataFrame(tumor_volume_df, columns= ["Tumor Volume (mm3)"])
+
+# Preview DataFrame
+tumor_analysis.head()
+
+# Store the Standard Error of Tumor Volumes Grouped by Drug and Timepoint
+tumor_standarderror_filter = combined_trial_data_df.values.std(ddof=1)
+tumor_standarderror_df = tumor_standarderror_filter.groupby(['Drug', 'Timepoint'])
+
+# Convert to DataFrame
+tumor_standarderror_analysis = pd.DataFrame(tumor_standarderror_df, columns=["Tumor Volume (mm3)"])
+
+# Preview DataFrame
+tumor_standarderror_analysis.head()
+______________________________________
+
+
+# Store the Standard Error of Tumor Volumes Grouped by Drug and Timepoint
+tumor_standarderror_df = combined_trial_data_df.groupby(['Drug', 'Timepoint'])['Tumor Volume (mm3)'].std()
+
+# Convert to DataFrame
+tumor_standarderror_analysis = pd.DataFrame(tumor_standarderror_df, columns= ["Tumor Volume (mm3)"])
+
+# Preview DataFrame
+tumor_standarderror_analysis.head()
+_______________________________________
+
+
+# Minor Data Munging to Re-Format the Data Frames
+trial_data_reformat = combined_trial_data_df.groupby(['Timepoint', 'Drug']).mean().sum(
+    level=['Timepoint', 'Drug']).unstack('Drug')
+del trial_data_reformat['Metastatic Sites']
+
+# Preview that Reformatting worked
+trial_data_reformat
+_______________________________________
+
+
+#Find drug data to put into arange
+
+#Create the X and Y axis lists
+time = np.arange(0,45,5)
+capo_drug = [45, 44.27, 43.08, 42.06, 40.72, 39.94, 38.77, 37.82, 36.96, 36.24]
+infu_drug = [45, 47.06, 49.40, 51.30, 53.20, 55.72, 58.30, 60.74, 63.16, 65.76]
+keta_drug = [45, 47.39, 49.58, 52.40, 54.92, 57.68, 61.00, 63.37, 66.07, 70.66]
+placebo_drug = [45, 47.13, 49.42, 51.36, 54.36, 57.48, 59.81, 62.42, 65.05, 68.08]
+
+plt.title("Tumor Response to Treatment")
+plt.xlabel("Time (Days))
+plt.ylabel("Tumor Volume (mm3))
+
+color="red", label="Capomulin"
+color="blue", label="Infubinol"
+color="green", label="Ketapril"
+color="black", label="Placebo"
+
+plt.plot
+plt.plot
+plt.plot
+plt.plot
+plt.show
