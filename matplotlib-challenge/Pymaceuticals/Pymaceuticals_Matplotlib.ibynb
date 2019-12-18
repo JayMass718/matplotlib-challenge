@@ -1,0 +1,263 @@
+# Dependencies and Setup
+%matplotlib inline
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+# Hide warning messages in notebook
+import warnings
+warnings.filterwarnings('ignore')
+
+# File to Load (Remember to Change These)
+mouse_drug_data_to_load = "data/mouse_drug_data.csv"
+clinical_trial_data_to_load = "data/clinicaltrial_data.csv"
+
+# Read the Mouse and Drug Data and the Clinical Trial Data
+mouse_drug_data_df = pd.read_csv(mouse_drug_data_to_load)
+clinical_trial_data_df = pd.read_csv(clinical_trial_data_to_load)
+
+# Combine the data into a single dataset
+combined_trial_data_df = pd.merge(mouse_drug_data_df, clinical_trial_data_df, how='outer', on='Mouse ID')
+
+# Display the data table for preview
+combined_trial_data_df.head()
+
+#######################################
+
+## Tumor Response to Treatment
+
+# Store the Mean Tumor Volume Data Grouped by Drug and Timepoint 
+tumor_volume_df = combined_trial_data_df.groupby(['Drug', 'Timepoint'])['Tumor Volume (mm3)'].mean()
+
+# Convert to DataFrame
+tumor_analysis = pd.DataFrame(tumor_volume_df)
+
+# Preview DataFrame
+tumor_analysis.head()
+
+#######################################
+
+# Store the Standard Error of Tumor Volumes Grouped by Drug and Timepoint
+tumor_standarderror_df = combined_trial_data_df.groupby(['Drug', 'Timepoint'])['Tumor Volume (mm3)'].std(ddof=1)
+
+# Convert to DataFrame
+tumor_standarderror_analysis = pd.DataFrame(tumor_standarderror_df)
+
+# Preview DataFrame
+tumor_standarderror_analysis.head()
+
+########################################
+
+# Minor Data Munging to Re-Format the Data Frames
+trial_data_reformat = combined_trial_data_df.groupby(['Timepoint', 'Drug']).mean().sum(
+    level=['Timepoint', 'Drug']).unstack('Drug')
+del trial_data_reformat['Metastatic Sites']
+# Preview that Reformatting worked
+trial_data_reformat
+
+#######################################
+
+# Set x axis to numerical value for days (Timepoint)
+x_axis = np.arange(0,50,5)
+
+# Specific Drugs and their effects on Tumor Volume - Array
+Capomulin_vol = [45.00, 44.27, 43.08, 42.06, 40.72, 39.94, 38.77, 37.82, 36.96, 36.24]
+Infubinol_vol = [45.00, 47.06, 49.40, 51.30, 53.20, 55.72, 58.30, 60.74, 63.16, 65.75]
+Ketapril_vol = [45.00, 46.80, 48.69, 50.93, 53.64, 56.73, 59.56, 62.69, 65.60, 69.27]
+Placebo_vol = [45.00, 47.13, 49.42, 51.35, 54.36, 57.48, 59.81, 62.42, 65.05, 68.08]
+
+# Create a handle for each plot
+capomulin, = plt.plot(x_axis, Capomulin_vol, marker="o", color="Red", linewidth=1, label="Capomulin")
+infubinol, = plt.plot(x_axis, Infubinol_vol, marker="^", color="Blue", linewidth=1, label="Infubinol")
+ketapril, = plt.plot(x_axis, Ketapril_vol, marker="s", color="Green", linewidth=1, label="Ketapril")
+placebo, = plt.plot(x_axis, Placebo_vol, marker="D", color="Black", linewidth=1, label="Placebo")
+
+# Create labels for the plot
+plt.legend(handles=[capomulin, infubinol, ketapril, placebo], loc="best")
+
+# Create labels for the x and y axis
+plt.xlabel("Time (Days)")
+plt.ylabel("Tumor Volume (mm3)")
+
+# Create Header
+plt.suptitle('Tumor Response to Treatment')
+
+#Error Bars (Trouble with this part)
+
+# Save the Figure
+plt.savefig("../images/tumor_treatment")
+# Show the Figure
+plt.show()
+
+#####################################
+
+## Metastatic Response to Treatment
+
+# Store the Mean Met. Site Data Grouped by Drug and Timepoint 
+metastatic_df = combined_trial_data_df.groupby(['Drug', 'Timepoint'])['Metastatic Sites'].mean()
+# Convert to DataFrame
+metastatic_analysis = pd.DataFrame(metastatic_df)
+# Preview DataFrame
+metastatic_analysis.head()
+
+#####################################
+
+# Store the Standard Error associated with Met. Sites Grouped by Drug and Timepoint 
+metastatic_standarderror_df = combined_trial_data_df.groupby(['Drug', 'Timepoint'])['Metastatic Sites'].std(ddof=1)
+# Convert to DataFrame
+metastatic_standarderror_analysis = pd.DataFrame(metastatic_standarderror_df)
+# Preview DataFrame
+metastatic_standarderror_analysis.head()
+
+#####################################
+
+# Minor Data Munging to Re-Format the Data Frames
+trial_data_reformat = combined_trial_data_df.groupby(['Timepoint', 'Drug']).mean().sum(
+    level=['Timepoint', 'Drug']).unstack('Drug')
+del trial_data_reformat['Tumor Volume (mm3)']
+# Preview that Reformatting worked
+trial_data_reformat
+
+######################################
+
+# Set x axis to numerical value for days (Timepoint)
+x_axis = np.arange(0,50,5)
+
+# Specific Drugs and their effects on Tumor Volume - Array
+Capomulin_meta_vol = [0.00, 0.16, 0.32, 0.38, 0.65, 0.82, 1.09, 1.18, 1.38, 1.48]
+Infubinol_meta_vol = [0.00, 0.28, 0.67, 0.91, 1.05, 1.28, 1.59, 1.67, 2.10, 2.11]
+Ketapril_meta_vol = [0.00, 0.30, 0.59, 0.84, 1.21, 1.63, 2.06, 2.29, 2.73, 3.36]
+Placebo_meta_vol = [0.00, 0.38, 0.83, 1.25, 1.53, 1.94, 2.27, 2.64, 3.17, 3.27]
+
+# Create a handle for each plot
+capomulin_meta, = plt.plot(x_axis, Capomulin_meta_vol, marker="o", color="Red", linewidth=1, label="Capomulin")
+infubinol_meta, = plt.plot(x_axis, Infubinol_meta_vol, marker="^", color="Blue", linewidth=1, label="Infubinol")
+ketapril_meta, = plt.plot(x_axis, Ketapril_meta_vol, marker="s", color="Green", linewidth=1, label="Ketapril")
+placebo_meta, = plt.plot(x_axis, Placebo_meta_vol, marker="D", color="Black", linewidth=1, label="Placebo")
+
+# Create labels for the plot
+plt.legend(handles=[capomulin_meta, infubinol_meta, ketapril_meta, placebo_meta], loc="best")
+
+# Create labels for the x and y axis
+plt.xlabel("Time (Days)")
+plt.ylabel("Met. Sites")
+
+# Create Header
+plt.suptitle('Metastatic Sites During Treatment')
+
+#Error Bars (Trouble with this part)
+
+# Save the Figure
+plt.savefig("../images/tumor_treatment")
+
+# Show the Figure
+plt.show()
+
+######################################
+
+## Survival Rates
+
+# split up our data into groups based upon ‘Timepoint’ and ‘Drug’
+mouse_groups = combined_trial_data_df.groupby(['Drug', 'Timepoint'])
+# find out how many mice of each timepoint and drug were still alive
+mice_survival_count = mouse_groups['Mouse ID'].count()
+mouse_analysis = pd.DataFrame(mice_survival_count)
+mouse_analysis
+
+#######################################
+
+# Minor Data Munging to Re-Format the Data Frames
+mouse_data_reformat = mouse_analysis.groupby(['Timepoint', 'Drug']).mean().sum(
+    level=['Timepoint', 'Drug']).unstack('Drug')
+# Preview that Reformatting worked
+mouse_data_reformat
+
+#######################################
+
+# Set x axis to numerical value for days (Timepoint)
+x_axis = np.arange(0,50,5)
+
+# Generate the Plot (Accounting for percentages)
+Capomulin_surv_percent = [100, 100, 100, 96, 92, 88, 88, 88, 84, 84]
+Infubinol_surv_percent = [100, 100, 84, 84, 80, 72, 68, 48, 40, 36]
+Ketapril_surv_percent = [100, 92, 88, 76, 76, 76, 72, 68, 60, 44]
+Placebo_surv_percent = [100, 96, 96, 80, 76, 68, 60, 56, 48, 44]
+
+# Create a handle for each plot
+capomulin_perc_plot, = plt.plot(x_axis, Capomulin_surv_percent, marker="o", color="Red", linewidth=1, label="Capomulin")
+infubinol_perc_plot, = plt.plot(x_axis, Infubinol_surv_percent, marker="^", color="Blue", linewidth=1, label="Infubinol")
+ketapril_perc_plot, = plt.plot(x_axis, Ketapril_surv_percent, marker="s", color="Green", linewidth=1, label="Ketapril")
+placebo_perc_plot, = plt.plot(x_axis, Placebo_surv_percent, marker="D", color="Black", linewidth=1, label="Placebo")
+
+# Create labels for the plot
+plt.legend(handles=[capomulin_perc_plot, infubinol_perc_plot, ketapril_perc_plot, placebo_perc_plot], loc="best")
+
+# Create labels for the x and y axis
+plt.xlabel("Time (Days)")
+plt.ylabel("Survival Rate (%)")
+
+# Save the Figure
+plt.savefig("../images/tumor_treatment")
+# Show the Figure
+plt.show()
+
+##########################################
+
+## Summary Bar Graph
+
+# Calculate the percent changes for each drug on tumor volume
+
+# Display the data to confirm
+
+##############
+# Calculate the percent changes for each drug
+tumor_volume_percentage = pd.DataFrame({"Capomulin":[45.00, 36.24],
+                                        "Ceftamin":[45.00, 64.13],
+                                        "Infubinol":[45.00, 65.75],
+                                        "Ketapril":[45.00, 70.66],
+                                        "Naftisol":[45.00, 69.27],
+                                        "Placebo":[45.00, 68.08],
+                                        "Propriva":[45.00, 66.26],
+                                        "Ramicane":[45.00, 34.96],
+                                        "Stelasyn":[45.00, 68.44],
+                                        "Zoniferol":[45.00, 65.96]})
+# Display the data to confirm
+tumor_volume_percentage.pct_change().dropna(how='all')
+
+#################
+
+# Store all Relevant Percent Changes into a Tuple
+# Then splice the data between passing and failing drugs
+tumor_volume_ondrugs = pd.DataFrame({'drug_volume' : [-20, 46, 57, 51]})
+
+t1 = tumor_volume_ondrugs[tumor_volume_ondrugs['drug_volume']>0]
+t2 = tumor_volume_ondrugs[tumor_volume_ondrugs['drug_volume']<=0]
+
+plt.bar(t1.index.values, t1['drug_volume'], color='r')
+plt.bar(t2.index.values, t2['drug_volume'], color='g')
+
+# Tell matplotlib where we would like to place each of our x axis headers
+
+tumor_volume_percentage_change = [-20, 46, 57, 51]
+x_axis = np.arange(len(tumor_volume_percentage_change))
+
+tick_locations = [value for value in x_axis]
+plt.xticks(tick_locations, ["Capomulin", "Infubinol", "Ketapril", "Placebo"])
+
+###############
+# Add numbers inside the bars (Couldn't figure this out)
+#label = ['-20%', '46%', '57%', '51%']
+#for i in range(len(tumor_volume_percentage_change)):
+#plt.text(x = x_axis , y = tumor_volume_ondrugs, s = label[i], size = 6)
+###############
+
+# Create labels for the x and y axis
+plt.title("Tumor Change Over 45 Day Treatment")
+plt.xlabel("Drugs")
+plt.ylabel("Tumor Volume Change (%)")
+
+# Save the Figure
+plt.savefig("../images/tumor_treatment")
+
+# Show the Figure
+plt.show()
