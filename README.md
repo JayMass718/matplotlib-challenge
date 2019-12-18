@@ -1,2 +1,2 @@
 # matplotlib-challenge
-matplot lib challege for Columbia Boot Camp
+matplot lib challenge for Columbia Boot Camp
